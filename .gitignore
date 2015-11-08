@@ -1,0 +1,26 @@
+# Default .gitignore file
+
+# Files created by gradle
+.gradle/
+build/
+gradle-app.setting
+.classpath
+
+# Files created by eclipse
+.settings/
+bin/
+ui/
+
+# Files created by NFS/OS-X etc
+.DS_Store
+
+*.class
+
+# Ignore generated classes
+*Factory.java
+*FactoryImpl.java
+*Package.java
+*PackageImpl.java
+*Task.java
+*EditPlugin.java
+

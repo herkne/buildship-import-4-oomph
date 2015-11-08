@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.edit.itemProviderAdapterFactories">
+      <!-- @generated BuildshipImport -->
+      <factory
+            uri="http://www.hkneissel.de/oomph/buildshipimport/1.0"
+            class="de.hkneissel.oomph.buildshipimport.provider.BuildshipImportItemProviderAdapterFactory"
+            supportedTypes=
+              "org.eclipse.emf.edit.provider.IEditingDomainItemProvider
+               org.eclipse.emf.edit.provider.IStructuredItemContentProvider
+               org.eclipse.emf.edit.provider.ITreeItemContentProvider
+               org.eclipse.emf.edit.provider.IItemLabelProvider
+               org.eclipse.emf.edit.provider.IItemPropertySource"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.edit.childCreationExtenders">
+      <!-- @generated BuildshipImport -->
+      <extender
+            uri="http://www.eclipse.org/oomph/base/1.0"
+            class="de.hkneissel.oomph.buildshipimport.provider.BuildshipImportItemProviderAdapterFactory$BaseChildCreationExtender"/>
+      <extender
+            uri="http://www.eclipse.org/oomph/setup/1.0"
+            class="de.hkneissel.oomph.buildshipimport.provider.BuildshipImportItemProviderAdapterFactory$SetupChildCreationExtender"/>
+   </extension>
+
+</plugin>

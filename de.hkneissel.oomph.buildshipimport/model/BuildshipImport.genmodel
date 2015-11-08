@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/de.hkneissel.oomph.buildshipimport/src" creationIcons="false"
+    editorDirectory="" modelPluginID="de.hkneissel.oomph.buildshipimport" modelName="BuildshipImport"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" testsDirectory=""
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="5.0" copyrightFields="false"
+    optimizedHasChildren="true" usedGenPackages="../../org.eclipse.oomph.base/model/Base.genmodel#//base ../../org.eclipse.oomph.setup/model/Setup.genmodel#//setup"
+    importOrganizing="true" cleanup="true">
+  <foreignModel>BuildshipImport.ecore</foreignModel>
+  <genPackages prefix="BuildshipImport" basePackage="de.hkneissel.oomph" disposableProviderFactory="true"
+      multipleEditorPages="false" generateModelWizard="false" extensibleProviderFactory="true"
+      childCreationExtenders="true" fileExtensions="setup" ecorePackage="BuildshipImport.ecore#/"
+      publicationLocation="/de.hkneissel.oomph.buildshipimport/model/Buildshipimport-1.0.ecore">
+    <genClasses ecoreClass="BuildshipImport.ecore#//BuildshipImportTask">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/ProjectRootDirectory"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/JavaHome"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/GradleUserHome"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/JvmArguments"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/Arguments"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/ImportWaitTime"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/GradleTask"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute BuildshipImport.ecore#//BuildshipImportTask/GradleBuildDirectory"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>
