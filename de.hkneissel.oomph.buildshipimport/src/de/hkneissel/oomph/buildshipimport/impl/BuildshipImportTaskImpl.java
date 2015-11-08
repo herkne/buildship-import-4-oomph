@@ -10,7 +10,9 @@
  */
 package de.hkneissel.oomph.buildshipimport.impl;
 
+import org.eclipse.oomph.setup.SetupTask;
 import org.eclipse.oomph.setup.SetupTaskContext;
+import org.eclipse.oomph.setup.git.GitCloneTask;
 import org.eclipse.oomph.setup.impl.SetupTaskImpl;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -639,7 +641,7 @@ public class BuildshipImportTaskImpl extends SetupTaskImpl implements BuildshipI
 
   public void perform(final SetupTaskContext context) throws Exception
   {
-    final File projectRootDir = asFile(getProjectRootDirectory(), "ProjectRootDirectory");
+    final File projectRootDir = determineImportDirectory();
     if (projectRootDir == null)
     {
       throw new NullPointerException("ProjectRootDirectory not set");
@@ -676,6 +678,7 @@ public class BuildshipImportTaskImpl extends SetupTaskImpl implements BuildshipI
           {
             context.log("Import completed successfuly.");
 
+            // Maybe this should be moved into an extra oomph setup task?
             ensureGradleViewsAreVisible();
 
             // Run the initial gradle task ...
@@ -755,6 +758,35 @@ public class BuildshipImportTaskImpl extends SetupTaskImpl implements BuildshipI
     }
 
     throw new IllegalArgumentException(name_ + " must use 'file:' scheme, not '" + scheme + ":' (" + uri_ + ")");
+  }
+
+  /**
+   * Determines the directory from which the projects will be imported.
+   *
+   * This method first checks the ProjectRootDirectory attribute. If it is not set it will check the predecessor tasks.
+   * If there is a git clone task in this list, its location attribute will be used as the import directory.
+   *
+   * @return the import directory nor null if no valid directory could be determined.
+   */
+  private File determineImportDirectory()
+  {
+    File projectRootDir = asFile(getProjectRootDirectory(), "ProjectRootDirectory");
+    if (projectRootDir == null)
+    {
+      for (SetupTask task : getPredecessors())
+      {
+        if (task instanceof GitCloneTask)
+        {
+          File location = new File(((GitCloneTask)task).getLocation());
+          if (location.exists())
+          {
+            return location;
+          }
+        }
+      }
+    }
+
+    return projectRootDir;
   }
 
   @Override

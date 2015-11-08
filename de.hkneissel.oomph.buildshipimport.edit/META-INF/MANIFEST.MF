@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-Vendor: %providerName
 Bundle-SymbolicName: de.hkneissel.oomph.buildshipimport.edit;singleton:=true
-Bundle-Version: 0.3.0.qualifier
+Bundle-Version: 0.4.0.qualifier
 Bundle-ClassPath: .
 Bundle-Activator: de.hkneissel.oomph.buildshipimport.provider.BuildshipImportEditPlugin$Implementation
 Bundle-ActivationPolicy: lazy
