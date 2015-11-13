@@ -2,7 +2,9 @@
 # An Oomph task for importing gradle projects using Buildship
 
 These plugins provide an oomph setup task to import gradle projects into eclipse using the buildship project-import wizard.
-After the project has been successfully imported an optional gradle task may be executed.
+After the project has been successfully imported an optional gradle task may be executed. The task checks the presence of 
+a file `.settings/gradle.prefs` in the project root directory. The task will be executed if either this file is missing
+or its contents points to another project location.
 
 For the moment consider this to be in alpha state. The task seems to work with all of my setups i tried so far, but problems might still exist.
 
@@ -17,8 +19,7 @@ Add the feature to the workspace you use to edit your setup files and to the wor
 
 The task provides the following properties:
 
-`ProjectRootDirectory` set this to a file url pointing to the folder containing the gradle project to be imported. If the property is not set and
-the task as a git clone task in the list of predecessors, the location property of the first got clone task will be used as import directory.
+`ProjectRootDirectory` set this to a file url pointing to the folder containing the gradle project to be imported. 
 
 `JavaHome` set this to a file url to be passed on to the buildship import task as the JRE to be used.
 
@@ -30,7 +31,7 @@ the task as a git clone task in the list of predecessors, the location property 
 
 `GradleBuildDirectory` - the directory from which `GradleTask` will be executed. If not set `ProjectRootDirectory` will be used.
 
-`Arguments` and `JvmArguments` are currently not used.
+`Arguments` and `JvmArguments` are defined but currently not used.
 
 
 # License

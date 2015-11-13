@@ -10,9 +10,7 @@
  */
 package de.hkneissel.oomph.buildshipimport.impl;
 
-import org.eclipse.oomph.setup.SetupTask;
 import org.eclipse.oomph.setup.SetupTaskContext;
-import org.eclipse.oomph.setup.git.GitCloneTask;
 import org.eclipse.oomph.setup.impl.SetupTaskImpl;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -36,13 +34,26 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.gradleware.tooling.toolingclient.GradleDistribution;
 import com.gradleware.tooling.toolingmodel.repository.FixedRequestAttributes;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -71,6 +82,8 @@ import de.hkneissel.oomph.buildshipimport.BuildshipImportTask;
  */
 public class BuildshipImportTaskImpl extends SetupTaskImpl implements BuildshipImportTask
 {
+  private static final boolean DEBUG = false;
+
   /**
    * The default value of the '{@link #getProjectRootDirectory() <em>Project Root Directory</em>}' attribute.
    * <!-- begin-user-doc -->
@@ -634,9 +647,119 @@ public class BuildshipImportTaskImpl extends SetupTaskImpl implements BuildshipI
     return PRIORITY;
   }
 
+  /**
+   * Lets assume, that a project freshly retrieved from version control has no
+   * or an invalid .settings/gradle.prefs file. So we check if the file
+   * exists and its contents is consistent with the configuration
+   * of this task.
+   */
   public boolean isNeeded(SetupTaskContext context) throws Exception
   {
-    return true;
+    // is the settings file present?
+    final File projectRootDir = determineImportDirectory();
+    if (projectRootDir == null)
+    {
+      context.log("ProjectRootDirectory not set");
+      return true;
+    }
+
+    final File javaHomeDir = asFile(getJavaHome(), "JavaHome");
+
+    File settings = new File(projectRootDir, ".settings/gradle.prefs");
+    if (!settings.exists())
+    {
+      if (DEBUG)
+      {
+        context.log("Not found: " + settings);
+      }
+      return true;
+    }
+
+    try
+    {
+      Map<String, String> entries = readGradleSettings(settings);
+
+      String dir = entries.get("project_dir");
+      if (DEBUG)
+      {
+        context.log("project_dir := " + dir);
+      }
+      if (dir == null)
+      {
+        return true;
+      }
+      if (!projectRootDir.equals(new File(dir).getAbsoluteFile()))
+      {
+        if (DEBUG)
+        {
+          context.log("projectRootDir := " + projectRootDir);
+        }
+        return true;
+      }
+
+      dir = entries.get("connection_project_dir");
+      if (DEBUG)
+      {
+        context.log("connection_project_dir := " + dir);
+      }
+      if (dir == null)
+      {
+        return true;
+      }
+      if (!projectRootDir.equals(new File(dir).getAbsoluteFile()))
+      {
+        if (DEBUG)
+        {
+          context.log("projectRootDir := " + projectRootDir);
+        }
+        return true;
+      }
+
+      dir = entries.get("connection_java_home");
+      if (DEBUG)
+      {
+        context.log("connection_java_home := " + dir);
+      }
+      if (dir == null)
+      {
+        if (javaHomeDir != null)
+        {
+          return true;
+        }
+      }
+      else
+      {
+        if (javaHomeDir != null && !javaHomeDir.equals(new File(dir).getAbsoluteFile()))
+        {
+          if (DEBUG)
+          {
+            context.log("javaHomeDir := " + javaHomeDir);
+          }
+          return true;
+        }
+      }
+    }
+    catch (IOException e)
+    {
+      if (DEBUG)
+      {
+        context.log(e);
+      }
+      return true;
+    }
+    catch (JsonSyntaxException e)
+    {
+      if (DEBUG)
+      {
+        context.log(e);
+      }
+      return true;
+    }
+
+    // Seems the gradle settings are already ok, so there is nothing to be done any more.
+
+    context.log(".settings/gradle.prefs up-to-date, nothing to be done.");
+    return false;
   }
 
   public void perform(final SetupTaskContext context) throws Exception
@@ -739,6 +862,8 @@ public class BuildshipImportTaskImpl extends SetupTaskImpl implements BuildshipI
 
   private File asFile(URI uri_, String name_)
   {
+    File result = null;
+
     if (uri_ == null || "".equals(uri_.toString()))
     {
       return null;
@@ -749,49 +874,104 @@ public class BuildshipImportTaskImpl extends SetupTaskImpl implements BuildshipI
     {
       // The property may be set to the path directly, not to the locations uri.
       // We will accept this too.
-      return new File(uri_.path());
+      result = new File(uri_.path());
     }
-
-    if ("file".equals(scheme))
+    else if ("file".equals(scheme))
     {
-      return new File(uri_.toFileString());
+      result = new File(uri_.toFileString());
+    }
+    else
+    {
+      throw new IllegalArgumentException(name_ + " must use 'file:' scheme, not '" + scheme + ":' (" + uri_ + ")");
     }
 
-    throw new IllegalArgumentException(name_ + " must use 'file:' scheme, not '" + scheme + ":' (" + uri_ + ")");
+    try
+    {
+      return result.getCanonicalFile();
+    }
+    catch (IOException e)
+    {
+      return result.getAbsoluteFile();
+    }
   }
 
   /**
    * Determines the directory from which the projects will be imported.
-   *
-   * This method first checks the ProjectRootDirectory attribute. If it is not set it will check the predecessor tasks.
-   * If there is a git clone task in this list, its location attribute will be used as the import directory.
    *
    * @return the import directory nor null if no valid directory could be determined.
    */
   private File determineImportDirectory()
   {
     File projectRootDir = asFile(getProjectRootDirectory(), "ProjectRootDirectory");
-    if (projectRootDir == null)
-    {
-      for (SetupTask task : getPredecessors())
-      {
-        if (task instanceof GitCloneTask)
-        {
-          File location = new File(((GitCloneTask)task).getLocation());
-          if (location.exists())
-          {
-            return location;
-          }
-        }
-      }
-    }
-
     return projectRootDir;
   }
 
   @Override
   public void dispose()
   {
+  }
+
+  private Map<String, String> readGradleSettings(File settings) throws IOException, JsonSyntaxException
+  {
+    String json = null;
+    InputStream inputStream = null;
+
+    try
+    {
+      inputStream = new FileInputStream(settings);
+      json = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+    }
+    finally
+    {
+      try
+      {
+        inputStream.close();
+      }
+      catch (IOException e)
+      {
+        // ignore
+      }
+    }
+
+    // Settings file found, verify that project directory and java home are correct
+
+    JsonParser parser = new JsonParser();
+    return extractEntries(null, parser.parse(json));
+  }
+
+  private Map<String, String> extractEntries(String name, JsonElement jsonElement)
+  {
+    Map<String, String> result = new HashMap<String, String>();
+
+    if (jsonElement.isJsonNull())
+    {
+      // ignore
+    }
+    else if (jsonElement.isJsonObject())
+    {
+      result.putAll(extractEntries(jsonElement.getAsJsonObject()));
+    }
+    else if (jsonElement.isJsonArray())
+    {
+
+    }
+    else if (name != null)
+    {
+      result.put(name, jsonElement.getAsString());
+    }
+
+    return result;
+  }
+
+  private Map<String, String> extractEntries(JsonObject jsonObject)
+  {
+    Map<String, String> result = new HashMap<String, String>();
+
+    for (Entry<String, JsonElement> entry : jsonObject.entrySet())
+    {
+      result.putAll(extractEntries(entry.getKey(), entry.getValue()));
+    }
+    return result;
   }
 
   // ----------------------------------------------------------------------
