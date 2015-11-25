@@ -12,7 +12,7 @@
 <feature
       id="de.hkneissel.oomph.buildshipimport"
       label="%featureName"
-      version="0.5.1.qualifier"
+      version="0.5.3.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -26,6 +26,10 @@
    <license>
       %license
    </license>
+
+   <url>
+      <update label="buildshipimport udates" url="http://p2.kneissel.mail-und-web.de/update/buildshipimport"/>
+   </url>
 
    <plugin
          id="de.hkneissel.oomph.buildshipimport"

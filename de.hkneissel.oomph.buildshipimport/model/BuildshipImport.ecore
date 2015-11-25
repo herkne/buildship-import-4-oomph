@@ -8,7 +8,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="BuildshipImportTask" eSuperTypes="../../org.eclipse.oomph.setup/model/Setup.ecore#//SetupTask">
     <eAnnotations source="http://www.eclipse.org/oomph/setup/Enablement">
       <details key="variableName" value="p2.buildship.import"/>
-      <details key="repository" value="http://download.hkneissel.de/oomph/buildshipimport/updates"/>
+      <details key="repository" value="http://p2.kneissel.mail-und-web.de/update/buildshipimport"/>
       <details key="installableUnits" value="de.hkneissel.oomph.buildshipimport.feature.group"/>
     </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/oomph/setup/ValidTriggers">

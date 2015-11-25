@@ -13,6 +13,8 @@ Import the projects into the workspace, use the genmodel file to generate the mo
 
 Add the feature to the workspace you use to edit your setup files and to the workspace in which the task will be executed.
 
+There is a p2 update site here: 
+[http://p2.kneissel.mail-und-web.de/update/buildshipimport](http://p2.kneissel.mail-und-web.de/update/buildshipimport)
 
 
 # Usage
